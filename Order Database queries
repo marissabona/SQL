@@ -44,3 +44,34 @@ ON Feb.orderid = cust.order_id
 WHERE Feb.quantity > 2
 AND length(Feb.orderid) = 6
 AND Feb.orderid <> 'Order ID';
+
+#Orders placed between February 13 and February 18 2019
+SELECT orderdate
+FROM BIT_DB.FebSales
+WHERE orderdate between '02/13/19 00:00' AND '02/18/19 00:00';
+
+#Where orders were placed from at 1:35 on February 18 2019
+SELECT location
+FROM BIT_DB.FebSales
+WHERE orderdate = '02/18/19 01:35';
+
+#How many items were ordered on February 18 2019
+SELECT sum(quantity)
+FROM BIT_DB.FebSales
+WHERE orderdate like '02/18/19%';
+
+#Types of batteries sold in February
+SELECT distinct Product
+FROM BIT_DB.FebSales
+WHERE Product like '%Batteries%';
+
+#Items whose prices end in .99
+SELECT distinct Product, price
+FROM BIT_DB.FebSales
+WHERE Price like '%.99';
+
+#Items sold in Los Angeles during February
+SELECT distinct Product, sum(quantity)
+FROM BIT_DB.FebSales
+WHERE location like '%Los Angeles%'
+GROUP BY Product;
