@@ -1,0 +1,23 @@
+#1. How many TV shows are contained in the database?
+SELECT COUNT(*)
+FROM "CharlotteChaze/BreakIntoTech"."netflix_titles_info"
+WHERE type='TV Show';
+#Note when using PostgreSQL, single quotes denote strings,
+#whereas double quotes are syntax used for the FROM statement.
+
+#2. Who was cast in the shows most recently added to the database?
+SELECT "netflix_titles_info"."title", "netflix_people"."cast", "netflix_titles_info"."type", "netflix_titles_info"."date_added"
+FROM "CharlotteChaze/BreakIntoTech"."netflix_people"
+JOIN "CharlotteChaze/BreakIntoTech"."netflix_titles_info"
+ON "netflix_titles_info"."show_id" = "netflix_people"."show_id"
+WHERE "netflix_titles_info"."type" = 'TV Show'
+ORDER BY "CharlotteChaze/BreakIntoTech"."netflix_titles_info"."date_added"
+LIMIT 20;
+
+#3. Who directed the oldest movie in the database?
+SELECT "netflix_titles_info"."release_year", "netflix_titles_info"."title", "netflix_people"."director", "netflix_titles_info"."type"
+FROM "CharlotteChaze/BreakIntoTech"."netflix_people"
+JOIN "CharlotteChaze/BreakIntoTech"."netflix_titles_info"
+ON "netflix_titles_info"."show_id" = "netflix_people"."show_id"
+ORDER BY "CharlotteChaze/BreakIntoTech"."netflix_titles_info"."release_year"
+LIMIT 5;
