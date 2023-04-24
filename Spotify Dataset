@@ -30,15 +30,20 @@ WHERE popularity > 90
 ORDER BY popularity DESC
 LIMIT 10;
 
-#The top ten most popular artists by average song popularity
-SELECT distinct artist_name, AVG(popularity) as "average popularity", loudness
-FROM BIT_DB.Spotifydata
-GROUP BY artist_name
-ORDER BY AVG(popularity) DESC
-LIMIT 10;
-
 #The name and artist of the twenty longest tracks in the data set
 SELECT track_name, artist_name, duration_ms
 FROM BIT_DB.Spotifydata
 ORDER BY duration_ms DESC
 LIMIT 20;
+
+#Used a CTE to determine the most popular artists on average, and label them as Top Stars.
+WITH popularity_avg_CTE AS (
+SELECT s.artist_name,
+AVG(s.popularity) AS avg_popularity
+FROM SpotifyData s 
+GROUP BY s.artist_name
+)
+SELECT artist_name, avg_popularity, 'Top Star' as tag
+FROM popularity_avg_CTE
+WHERE avg_popularity>=90
+ORDER BY avg_popularity DESC;
