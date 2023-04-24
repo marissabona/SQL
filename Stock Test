@@ -1,0 +1,7 @@
+--Displaying when certain items sold vs. when they were purchased from customers.
+
+SELECT aprpo_aprstock.date_stock, aprpo_aprstock.item_po, aprpo_aprstock.sku_po, apr_sales.date, apr_sales.item, apr_sales.sku
+    FROM aprpo_aprstock
+    JOIN apr_sales
+    ON aprpo_aprstock.sku_po = apr_sales.sku
+    LIMIT 20;
