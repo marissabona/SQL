@@ -108,7 +108,7 @@ WHERE length(orderID) = 6
 AND orderID <> 'Order ID';
 
 #Total revenue for the product that brought in the most revenue in January
-SELECT Product, SUM(Quantity*price) as "Total Sales"
+SELECT Product, SUM(Quantity*price) as "Total Revenue"
 FROM BIT_DB.JanSales
 GROUP BY Product
 ORDER BY SUM(Quantity*price) DESC
