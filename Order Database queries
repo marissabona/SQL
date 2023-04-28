@@ -1,17 +1,19 @@
-#How many orders were placed in January
+--Querying a database containing customer order information over the course of a few months.
+
+--Viewing the number of orders placed in January
 SELECT count(Jan.orderID)
 FROM BIT_DB.JanSales Jan
 WHERE length(Jan.orderID) = 6
 AND Jan.orderID <> 'Order ID';
 
-#How many of these orders were for an iPhone
+--Viewing the number of orders for iPhones placed in January
 SELECT count(Jan.orderID)
 FROM BIT_DB.JanSales Jan
 WHERE Jan.product = 'iPhone'
 AND length(Jan.orderID) = 6
 AND Jan.orderID <> 'Order ID';
 
-#All customer account numbers for the orders placed in February
+--Looking at all customer account numbers for the orders placed in February
 SELECT distinct cust.acctnum
 FROM BIT_DB.customers cust
 INNER JOIN BIT_DB.FebSales Feb
@@ -19,24 +21,24 @@ ON cust.order_id = Feb.orderID
 WHERE length(cust.order_id) = 6
 AND cust.order_id <> 'Order ID';
 
-#The cheapest product sold in January including the price
+--Finding the cheapest product sold in January, including the price
 SELECT distinct Jan.product, Jan.price
 FROM BIT_DB.JanSales Jan
 WHERE Jan.price in (SELECT min(price) FROM BIT_DB.JanSales);
 
-#Total revenue for each product sold in January
+--Calculating total revenue for each product sold in January
 SELECT Jan.product, SUM(Jan.quantity)*Jan.price as Revenue
 FROM BIT_DB.JanSales Jan
 GROUP BY Jan.product
 ORDER BY Revenue;
 
-#Total quantity and revenue for products sold at Seattle Lincoln St. location
+--Calculating total quantity and revenue for products sold at Seattle Lincoln St. location
 SELECT Feb.product, SUM(Feb.quantity), SUM(Feb.quantity)*Feb.price as Revenue
 FROM BIT_DB.FebSales Feb
 WHERE Feb.location = '548 Lincoln St, Seattle, WA 98101'
 GROUP BY Feb.product;
 
-#Total number of customers who ordered more than 2 products in February, and average spend for each
+--Calculating total number of customers who ordered more than 2 products in February, and average spend for each
 SELECT count(distinct cust.acctnum), AVG(quantity*price)
 FROM BIT_DB.FebSales Feb
 LEFT JOIN BIT_DB.customers cust
@@ -45,38 +47,38 @@ WHERE Feb.quantity > 2
 AND length(Feb.orderid) = 6
 AND Feb.orderid <> 'Order ID';
 
-#Orders placed between February 13 and February 18 2019
+--Viewing all orders placed between February 13 and February 18 2019
 SELECT orderdate
 FROM BIT_DB.FebSales
 WHERE orderdate between '02/13/19 00:00' AND '02/18/19 00:00';
 
-#Where orders were placed from at 1:35 on February 18 2019
+--Viewing all orders placed at 1:35 on February 18 2019
 SELECT location
 FROM BIT_DB.FebSales
 WHERE orderdate = '02/18/19 01:35';
 
-#How many items were ordered on February 18 2019
+--Calculating how many items were ordered on February 18 2019
 SELECT sum(quantity)
 FROM BIT_DB.FebSales
 WHERE orderdate like '02/18/19%';
 
-#Types of batteries sold in February
+--Finding all types of batteries sold in February
 SELECT distinct Product
 FROM BIT_DB.FebSales
 WHERE Product like '%Batteries%';
 
-#Items whose prices end in .99
+--Viewing items whose prices end in .99
 SELECT distinct Product, price
 FROM BIT_DB.FebSales
 WHERE Price like '%.99';
 
-#Items sold in Los Angeles during February
+--Viewing items sold in Los Angeles during February
 SELECT distinct Product, sum(quantity)
 FROM BIT_DB.FebSales
 WHERE location like '%Los Angeles%'
 GROUP BY Product;
 
-#Number of orders received at New York locations in January that received more than 3 orders that month
+--Calculating number of orders received at New York locations in January that received more than 3 orders that month
 SELECT distinct location, COUNT(orderID) as "Total Orders"
 FROM BIT_DB.JanSales
 WHERE location like '%NY%'
@@ -85,13 +87,13 @@ AND orderID <> 'Order ID'
 GROUP BY location
 HAVING count(orderID) > 2;
 
-#Total number of headphone varieties sold in February
+--Viewing the total number of headphone varieties sold in February
 SELECT distinct Product, SUM(quantity) as "Total Sold"
 FROM BIT_DB.FebSales
 WHERE Product like '%headphones%'
 GROUP BY product;
 
-#Average amount spent per account in February
+--Calculating the average amount spent per account in February
 SELECT SUM(Quantity*price)/COUNT(cust.acctnum) as "Average Spent"
 FROM BIT_DB.FebSales Feb
 LEFT JOIN BIT_DB.customers cust
@@ -99,7 +101,7 @@ ON Feb.orderid=cust.order_id
 WHERE length(orderID) = 6 
 AND orderID <> 'Order ID';
 
-#Average quantity of products purchased per account in February
+--Calculating the average quantity of products purchased per account in February
 SELECT SUM(Quantity)/COUNT(cust.acctnum) as "Average Quantity"
 FROM BIT_DB.FebSales Feb
 LEFT JOIN BIT_DB.customers cust
@@ -107,7 +109,7 @@ ON Feb.orderID=cust.order_id
 WHERE length(orderID) = 6 
 AND orderID <> 'Order ID';
 
-#Total revenue for the product that brought in the most revenue in January
+--Viewing the total revenue for the product that brought in the most revenue in January
 SELECT Product, SUM(Quantity*price) as "Total Revenue"
 FROM BIT_DB.JanSales
 GROUP BY Product
