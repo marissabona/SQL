@@ -1,6 +1,8 @@
 ### Show customers who are not in the US
+```SQL
 SELECT * FROM chinook.customers
 WHERE Country <> "USA";
+```
 
 
 ### Show only customers who are in the US
