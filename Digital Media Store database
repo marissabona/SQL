@@ -1,19 +1,19 @@
-**Show customers who are not in the US**
+### Show customers who are not in the US
 SELECT * FROM chinook.customers
 WHERE Country <> "USA";
 
 
-#Show only customers who are in the US
+### Show only customers who are in the US
 SELECT * FROM chinook.customers
 WHERE Country = "USA";
 
 
-#Show only customers from Brazil
+### Show only customers from Brazil
 SELECT * FROM chinook.customers
 WHERE Country = "Brazil";
 
 
-#Find the invoices for customers from Brazil, and include the customer's name, invoice ID, invoice date, and billing country
+### Find the invoices for customers from Brazil, and include the customer's name, invoice ID, invoice date, and billing country
 SELECT i.InvoiceId, i.InvoiceDate, i.BillingCountry, c.FirstName, c.LastName
 FROM chinook.invoices i
 
