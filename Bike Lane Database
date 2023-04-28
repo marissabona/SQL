@@ -1,3 +1,6 @@
+--I created a database that houses information about bike lanes in a city, and queried it to view a few metrics.
+
+--First I created the table and inserted the bike lane information
 CREATE TABLE BIT_DB.CityBikeLanes(
 id integer primary key,
 year_installed year not null,
@@ -68,9 +71,11 @@ INSERT INTO BIT_DB.CityBikeLanes values(58,2011, 2021, "Beaver", 3.5, 2.5, "no")
 INSERT INTO BIT_DB.CityBikeLanes values(59,2008, 2021,"Kensington",4,4.9,"yes");
 INSERT INTO BIT_DB.CityBikeLanes values(60,2002, 2021,"Mouse",4.5,4.3,"no");
 
+--Looking at information about bike lanes on Walnut Street
 SELECT * FROM CityBikeLanes LIMIT 10;
 SELECT * FROM CityBikeLanes WHERE street='Walnut';
 
+--Using a CTE to view bike lanes with an average safety rating of 4.0 or higher, and labeling them as safe.
 WITH temprating AS (
 SELECT id, street, AVG(safetyrating) as avg_rating
 FROM CityBikeLanes
@@ -81,20 +86,24 @@ FROM temprating
 WHERE avg_rating >= 4.0
 ORDER BY avg_rating DESC;
 
+--Using a window function to view safety ratings
 SELECT street, safetyrating,
 AVG(safetyrating) OVER (PARTITION BY street) as "Average_safety_rating"
 FROM CityBikeLanes;
 
+--Viewing the difference between this query...
 SELECT street, safetyrating, AVG(safetyrating)
 FROM CityBikeLanes
 WHERE street='2nd'
 GROUP BY street, safetyrating;
 
+--...and this one, which uses a window function to display the average safety rating in each row of the table.
 SELECT street, safetyrating,
 AVG(safetyrating) OVER (PARTITION BY street) as "Average_safety_rating"
 FROM CityBikeLanes
 WHERE street='2nd';
 
+--Using a window function and case statements to label each bike lane depending on their average safety rating.
 SELECT street, safetyrating,
 AVG(safetyrating) OVER (PARTITION BY street) as "Average_safety_rating",
 CASE
