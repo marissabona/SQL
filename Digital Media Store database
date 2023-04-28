@@ -1,4 +1,4 @@
-#Show customers who are not in the US
+**Show customers who are not in the US**
 SELECT * FROM chinook.customers
 WHERE Country <> "USA";
 
