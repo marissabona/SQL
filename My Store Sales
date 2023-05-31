@@ -1,0 +1,427 @@
+--AN EXAMPLE OF CODE I USE TO ORGANIZE AND ANALYZE THE SALES DATA FOR MY RESALE STORE IN BUFFALO, NY
+
+--create vendors table and import csv
+CREATE TABLE vendors
+(id INTEGER PRIMARY KEY AUTOINCREMENT,
+name TEXT,
+phone TEXT);
+
+--create stock history table and import csv
+CREATE TABLE stock
+(date TEXT,
+item TEXT,
+sku INTEGER,
+vendor TEXT,
+cost TEXT,
+location TEXT,
+adjustment TEXT);
+
+--create sales table and import csv
+CREATE TABLE apr_sales
+(date TEXT,
+category TEXT,
+item TEXT,
+qty TEXT,
+sku TEXT,
+gross_sale INTEGER,
+discount INTEGER,
+net_sale INTEGER,
+tax INTEGER,
+transactioniD TEXT,
+device TEXT,
+notes TEXT,
+location TEXT,
+customer_id TEXT,
+customer TEXT,
+count INTEGER,
+itemization TEXT,
+employee TEXT);
+
+--create an inventory table for all inventory in our POS system and import csv
+CREATE TABLE inventory
+(token STRING PRIMARY KEY,
+item TEXT,
+variation TEXT,
+sku INTEGER,
+description TEXT,
+category TEXT,
+GTIN INTEGER,
+visibility TEXT,
+price INTEGER);
+
+
+--viewing the total number of items purchased in april by category,
+--joined with inventory because stock history does not list category
+SELECT i.category, COUNT(DISTINCT s.sku)
+FROM stock s
+LEFT JOIN inventory i
+ON s.sku = i.sku
+WHERE s.sku BETWEEN 40100 AND 49999
+AND LENGTH(s.sku) > 4
+GROUP BY i.category;
+
+--viewing the total number of items purchased in april that also sold in april
+SELECT a.category, COUNT(DISTINCT s.sku)
+FROM stock s
+INNER JOIN apr_sales a
+ON s.sku = a.sku
+WHERE s.sku BETWEEN 40100 AND 49999
+AND LENGTH(s.sku) > 4
+GROUP BY a.category;
+
+--viewing items that sold the fastest this month
+SELECT a.date as "Date Sold", s.date as "Date Purchased", 
+(JULIANDAY(a.date) - JULIANDAY(s.date)) as "sold in days",
+a.item, a.gross_sale, a.sku
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+ORDER BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing the average prices for items that sold
+-- within 7 days or less in the tees + tops category
+SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
+AVG(a.net_sale)
+OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
+AS "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND a.category = "1. Tees + Tops"
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing the average prices for items that sold
+-- within 7 days or less in the sweaters category
+SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
+AVG(a.net_sale)
+OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
+AS "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND a.category = "2. Sweaters"
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing the average prices for items that sold
+-- within 7 days or less in the jackets category
+SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
+AVG(a.net_sale)
+OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
+AS "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND a.category = "3. Jackets"
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing the average prices for items that sold
+-- within 7 days or less in the pants category
+SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
+AVG(a.net_sale)
+OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
+AS "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND a.category = "4. Pants"
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing the average prices for items that sold
+-- within 7 days or less in the dresses/skirts category
+SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
+AVG(a.net_sale)
+OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
+AS "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND a.category = "5. Dresses + Skirts"
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing the average prices for items that sold
+-- within 7 days or less in the shoes/accessories category
+SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
+AVG(a.net_sale)
+OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
+AS "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND a.category = "6. Shoes + Accessories"
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing average price by category of items sold in one week
+SELECT a.category, AVG(a.net_sale) as "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY a.category;
+
+--viewing average price total by how many days sold in
+--for items sold in one week
+SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) AS "Days Sold In",
+AVG(a.net_sale) as "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
+
+--viewing average price of all items sold within a week
+SELECT AVG(a.net_sale) as "Average Item Price"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND s.sku > 43200
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7;
+
+--viewing the total number of items from various brands purchased during april
+SELECT COUNT(sku) as purchased,
+CASE
+WHEN item LIKE "%zara%" THEN "Zara"
+WHEN item LIKE "%forever 21%" THEN "Forever 21"
+WHEN item LIKE "%h&m%" THEN "H&M"
+WHEN item LIKE "%wild fable%" THEN "Wild Fable"
+WHEN item LIKE "%urban%" THEN "Urban Outfitters"
+WHEN item LIKE "%american eagle%" THEN "American Eagle"
+WHEN item LIKE "%shein%" THEN "Shein"
+WHEN item LIKE "%asos%" THEN "ASOS"
+WHEN item LIKE "%old navy%" THEN "Old Navy"
+WHEN item LIKE "%topshop%" THEN "Topshop"
+WHEN item LIKE "%brandy%" THEN "Brandy Melville"
+WHEN item LIKE "%loft%" THEN "LOFT"
+WHEN item LIKE "%express%" THEN "Express"
+WHEN item LIKE "%free people%" THEN "Free People"
+WHEN item LIKE "%aerie%" THEN "Aerie"
+ELSE "Other"
+END AS "brand"
+FROM stock
+GROUP BY "brand"
+ORDER BY "purchased" DESC;
+
+--viewing the total number of items sold within a week of purchase
+-- in store, from various brands in april
+SELECT COUNT(a.sku) as "sold in a week in store",
+CASE
+WHEN a.item LIKE "%zara%" THEN "Zara"
+WHEN a.item LIKE "%forever 21%" THEN "Forever 21"
+WHEN a.item LIKE "%h&m%" THEN "H&M"
+WHEN a.item LIKE "%wild fable%" THEN "Wild Fable"
+WHEN a.item LIKE "%urban%" THEN "Urban Outfitters"
+WHEN a.item LIKE "%american eagle%" THEN "American Eagle"
+WHEN a.item LIKE "%shein%" THEN "Shein"
+WHEN a.item LIKE "%asos%" THEN "ASOS"
+WHEN a.item LIKE "%old navy%" THEN "Old Navy"
+WHEN a.item LIKE "%topshop%" THEN "Topshop"
+WHEN a.item LIKE "%brandy%" THEN "Brandy Melville"
+WHEN a.item LIKE "%loft%" THEN "LOFT"
+WHEN a.item LIKE "%express%" THEN "Express"
+WHEN a.item LIKE "%free people%" THEN "Free People"
+WHEN a.item LIKE "%aerie%" THEN "Aerie"
+ELSE "Other"
+END AS "brand"
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.sku > 43200
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
+GROUP BY "brand"
+ORDER BY "sold in a week in store" DESC;
+
+--viewing the total number of items of vintage items
+-- purchased from sellers during april
+SELECT COUNT(sku)
+FROM stock
+WHERE item LIKE "%uniqlo%";
+
+--viewing number of vintage items that sold in store
+-- within one week of being purchased from seller
+SELECT COUNT(a.sku)
+FROM apr_sales a
+INNER JOIN stock s
+ON a.sku = s.sku
+WHERE a.item LIKE "%uniqlo%"
+AND a.sku > 43200
+AND s.sku > 43200
+AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7;
+
+--creating a new column for items uploaded to website
+-- that shows the date the items were uploaded
+ALTER TABLE apr_sales
+ADD COLUMN date_uploaded TEXT;
+
+--adding the upload dates for the online itmes, using my personal upload calendar,
+--and checking my work with a select query after each update
+UPDATE apr_sales
+SET date_uploaded = "2023-04-04"
+WHERE sku BETWEEN 40400 AND 40450;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-04";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-05"
+WHERE sku BETWEEN 40500 AND 40550;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-05";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-06"
+WHERE sku BETWEEN 40600 AND 40650;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-06";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-07"
+WHERE sku BETWEEN 40700 AND 40750;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-07";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-10"
+WHERE sku BETWEEN 41100 AND 41450;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-10";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-18"
+WHERE sku BETWEEN 41800 AND 41850;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-18";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-19"
+WHERE sku BETWEEN 41900 AND 41950;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-19";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-20"
+WHERE sku BETWEEN 42000 AND 42050;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-20";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-25"
+WHERE sku BETWEEN 42500 AND 42550;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-25";
+
+UPDATE apr_sales
+SET date_uploaded = "2023-04-26"
+WHERE sku BETWEEN 42600 AND 42650;
+
+SELECT * FROM apr_sales
+WHERE date_uploaded = "2023-04-26";
+
+--checking my work for all online skus
+SELECT date, item, sku, date_uploaded, device
+FROM apr_sales
+WHERE sku BETWEEN 40100 AND 43050
+AND LENGTH(sku) > 4
+ORDER BY sku;
+
+--viewing which online items sold within one week of being uploaded, both in store and online
+SELECT date as "Date Sold", date_uploaded, item, sku,
+JULIANDAY(date) - JULIANDAY(date_uploaded) as "Sold in Days", device
+FROM apr_sales
+WHERE sku BETWEEN 40100 AND 43050
+AND LENGTH(sku) > 4
+ORDER BY "Sold in Days";
+
+--my original data has a column titled device, which shows which register a transaction took place at.
+--where the device name is listed, the item sold in store.
+--where the device name is NULL, the item sold online.
+
+--total number of online items from april
+SELECT COUNT(sku)
+FROM inventory
+WHERE sku BETWEEN 40100 AND 43050
+AND LENGTH(sku) > 4;
+
+--total number of online items that sold in april
+SELECT COUNT(sku)
+FROM apr_sales
+WHERE sku BETWEEN 40100 AND 43050
+AND LENGTH(sku) > 4;
+
+--viewing number of online items uploaded in april by week
+SELECT COUNT(sku),
+CASE
+WHEN sku BETWEEN 40400 AND 40850 THEN "Week 1"
+WHEN sku BETWEEN 41100 AND 41550 THEN "Week 2"
+WHEN sku BETWEEN 41800 AND 42250 THEN "Week 3"
+WHEN sku BETWEEN 42500 AND 42950 THEN "Week 4"
+ELSE "other"
+END as "Week Uploaded"
+FROM inventory
+WHERE LENGTH(sku) > 4
+GROUP BY "Week Uploaded";
+
+--viewing number of online items sold in april by week
+SELECT COUNT(sku),
+CASE
+WHEN sku BETWEEN 40400 AND 40850 THEN "Week 1"
+WHEN sku BETWEEN 41100 AND 41550 THEN "Week 2"
+WHEN sku BETWEEN 41800 AND 42250 THEN "Week 3"
+WHEN sku BETWEEN 42500 AND 42950 THEN "Week 4"
+ELSE "other"
+END as "Week Uploaded"
+FROM apr_sales
+WHERE LENGTH(sku) > 4
+GROUP BY "Week Uploaded";
+
+--viewing how many online items sold online vs in store
+SELECT COUNT(sku), device
+FROM apr_sales
+WHERE sku BETWEEN 40100 AND 43050
+AND LENGTH(sku) > 4
+GROUP BY device;
+
+--viewing online items sold online vs in store by week uploaded
+SELECT COUNT(sku), device,
+CASE
+WHEN sku BETWEEN 40400 AND 40850 THEN "Week 1"
+WHEN sku BETWEEN 41100 AND 41550 THEN "Week 2"
+WHEN sku BETWEEN 41800 AND 42250 THEN "Week 3"
+WHEN sku BETWEEN 42500 AND 42950 THEN "Week 4"
+ELSE "other"
+END as "Week Uploaded"
+FROM apr_sales
+WHERE LENGTH(sku) > 4
+GROUP BY "Week Uploaded", device;
