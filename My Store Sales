@@ -1,4 +1,9 @@
 --AN EXAMPLE OF CODE I USE TO ORGANIZE AND ANALYZE THE SALES DATA FOR MY RESALE STORE IN BUFFALO, NY
+--My store produces a lot of data. We buy from the public daily, so we have to understand our inventory
+--on a deep analytical level. In order to inform my buyers as to what's selling well and what we should
+--continue to purchase from our customers, I use SQL to organize and analyze monthly sales data. I then
+--present this data to our team, we formulate additional questions about it, and I continue to analyze
+-- the data and repeat this process.
 
 --create vendors table and import csv
 CREATE TABLE vendors
