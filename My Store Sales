@@ -259,7 +259,7 @@ ORDER BY "sold in a week in store" DESC;
 -- purchased from sellers during april
 SELECT COUNT(sku)
 FROM stock
-WHERE item LIKE "%uniqlo%";
+WHERE item LIKE "%vintage%";
 
 --viewing number of vintage items that sold in store
 -- within one week of being purchased from seller
@@ -267,7 +267,7 @@ SELECT COUNT(a.sku)
 FROM apr_sales a
 INNER JOIN stock s
 ON a.sku = s.sku
-WHERE a.item LIKE "%uniqlo%"
+WHERE a.item LIKE "%vintage%"
 AND a.sku > 43200
 AND s.sku > 43200
 AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7;
