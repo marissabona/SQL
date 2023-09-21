@@ -56,7 +56,7 @@ price INTEGER);
 
 
 --viewing the total number of items purchased in april by category,
---joined with inventory because stock history does not list category
+--(joined with inventory because stock history does not list category)
 SELECT i.category, COUNT(DISTINCT s.sku)
 FROM stock s
 LEFT JOIN inventory i
@@ -87,7 +87,7 @@ AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
 ORDER BY (JULIANDAY(a.date) - JULIANDAY(s.date));
 
 --viewing the average prices for items that sold
--- within 7 days or less in the tees + tops category
+-- within 7 days or less in an individual category
 SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
 AVG(a.net_sale)
 OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
@@ -101,81 +101,6 @@ AND a.category = "1. Tees + Tops"
 AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
 GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
 
---viewing the average prices for items that sold
--- within 7 days or less in the sweaters category
-SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
-AVG(a.net_sale)
-OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
-AS "Average Item Price"
-FROM apr_sales a
-INNER JOIN stock s
-ON a.sku = s.sku
-WHERE a.sku > 43200
-AND s.sku > 43200
-AND a.category = "2. Sweaters"
-AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
-GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
-
---viewing the average prices for items that sold
--- within 7 days or less in the jackets category
-SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
-AVG(a.net_sale)
-OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
-AS "Average Item Price"
-FROM apr_sales a
-INNER JOIN stock s
-ON a.sku = s.sku
-WHERE a.sku > 43200
-AND s.sku > 43200
-AND a.category = "3. Jackets"
-AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
-GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
-
---viewing the average prices for items that sold
--- within 7 days or less in the pants category
-SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
-AVG(a.net_sale)
-OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
-AS "Average Item Price"
-FROM apr_sales a
-INNER JOIN stock s
-ON a.sku = s.sku
-WHERE a.sku > 43200
-AND s.sku > 43200
-AND a.category = "4. Pants"
-AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
-GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
-
---viewing the average prices for items that sold
--- within 7 days or less in the dresses/skirts category
-SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
-AVG(a.net_sale)
-OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
-AS "Average Item Price"
-FROM apr_sales a
-INNER JOIN stock s
-ON a.sku = s.sku
-WHERE a.sku > 43200
-AND s.sku > 43200
-AND a.category = "5. Dresses + Skirts"
-AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
-GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
-
---viewing the average prices for items that sold
--- within 7 days or less in the shoes/accessories category
-SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) as "Time to Sell",
-AVG(a.net_sale)
-OVER (PARTITION BY (JULIANDAY(a.date) - JULIANDAY(s.date)))
-AS "Average Item Price"
-FROM apr_sales a
-INNER JOIN stock s
-ON a.sku = s.sku
-WHERE a.sku > 43200
-AND s.sku > 43200
-AND a.category = "6. Shoes + Accessories"
-AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
-GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
-
 --viewing average price by category of items sold in one week
 SELECT a.category, AVG(a.net_sale) as "Average Item Price"
 FROM apr_sales a
@@ -185,18 +110,6 @@ WHERE a.sku > 43200
 AND s.sku > 43200
 AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
 GROUP BY a.category;
-
---viewing average price total by how many days sold in
---for items sold in one week
-SELECT (JULIANDAY(a.date) - JULIANDAY(s.date)) AS "Days Sold In",
-AVG(a.net_sale) as "Average Item Price"
-FROM apr_sales a
-INNER JOIN stock s
-ON a.sku = s.sku
-WHERE a.sku > 43200
-AND s.sku > 43200
-AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7
-GROUP BY (JULIANDAY(a.date) - JULIANDAY(s.date));
 
 --viewing average price of all items sold within a week
 SELECT AVG(a.net_sale) as "Average Item Price"
@@ -277,98 +190,6 @@ AND a.sku > 43200
 AND s.sku > 43200
 AND (JULIANDAY(a.date) - JULIANDAY(s.date)) BETWEEN 0 AND 7;
 
---creating a new column for items uploaded to website
--- that shows the date the items were uploaded
-ALTER TABLE apr_sales
-ADD COLUMN date_uploaded TEXT;
-
---adding the upload dates for the online itmes, using my personal upload calendar,
---and checking my work with a select query after each update
-UPDATE apr_sales
-SET date_uploaded = "2023-04-04"
-WHERE sku BETWEEN 40400 AND 40450;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-04";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-05"
-WHERE sku BETWEEN 40500 AND 40550;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-05";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-06"
-WHERE sku BETWEEN 40600 AND 40650;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-06";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-07"
-WHERE sku BETWEEN 40700 AND 40750;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-07";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-10"
-WHERE sku BETWEEN 41100 AND 41450;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-10";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-18"
-WHERE sku BETWEEN 41800 AND 41850;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-18";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-19"
-WHERE sku BETWEEN 41900 AND 41950;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-19";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-20"
-WHERE sku BETWEEN 42000 AND 42050;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-20";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-25"
-WHERE sku BETWEEN 42500 AND 42550;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-25";
-
-UPDATE apr_sales
-SET date_uploaded = "2023-04-26"
-WHERE sku BETWEEN 42600 AND 42650;
-
-SELECT * FROM apr_sales
-WHERE date_uploaded = "2023-04-26";
-
---checking my work for all online skus
-SELECT date, item, sku, date_uploaded, device
-FROM apr_sales
-WHERE sku BETWEEN 40100 AND 43050
-AND LENGTH(sku) > 4
-ORDER BY sku;
-
---viewing which online items sold within one week of being uploaded, both in store and online
-SELECT date as "Date Sold", date_uploaded, item, sku,
-JULIANDAY(date) - JULIANDAY(date_uploaded) as "Sold in Days", device
-FROM apr_sales
-WHERE sku BETWEEN 40100 AND 43050
-AND LENGTH(sku) > 4
-ORDER BY "Sold in Days";
-
 --my original data has a column titled device, which shows which register a transaction took place at.
 --where the device name is listed, the item sold in store.
 --where the device name is NULL, the item sold online.
@@ -432,7 +253,6 @@ WHERE LENGTH(sku) > 4
 GROUP BY "Week Uploaded", device;
 
 --when a new month starts, i update my existing tables, and add a new table for the newly completed month's sales
---then, i begin to analyze the data for my buyers, which we will then compare to the previous months' data.
 CREATE TABLE may_sales
 (date TEXT,
 category TEXT,
@@ -452,52 +272,6 @@ customer TEXT,
 count INTEGER,
 itemization TEXT,
 employee TEXT);
-
---add date uploaded for online items, using my personal upload calendar
---i add these to the sales because i replace the inventory table each month
---while the sales tables remain as they are. i can look at the items that sold
---from previous months in future months by comparing the sales tables, not having
---to join them to the inventory table, and by using the sequences of the sku system i've created.
-ALTER TABLE may_sales
-ADD COLUMN date_uploaded TEXT;
-
-UPDATE may_sales
-SET date_uploaded = "2023-05-09"
-WHERE sku BETWEEN 50900 AND 50999;
-
---and i can see the exact number of items that sold from that week's upload
---just based on the number of rows that load in my select statement when
---checking my work.
-SELECT * FROM may_sales
-WHERE date_uploaded = "2023-05-09";
-
-UPDATE may_sales
-SET date_uploaded = "2023-05-16"
-WHERE sku BETWEEN 51600 AND 51699;
-
-SELECT * FROM may_sales
-WHERE date_uploaded = "2023-05-16";
-
-UPDATE may_sales
-SET date_uploaded = "2023-05-23"
-WHERE sku BETWEEN 52300 AND 52399;
-
-SELECT * FROM may_sales
-WHERE date_uploaded = "2023-05-23";
-
-UPDATE may_sales
-SET date_uploaded = "2023-05-24"
-WHERE sku BETWEEN 52400 AND 52499;
-
-SELECT * FROM may_sales
-WHERE date_uploaded = "2023-05-24";
-
-UPDATE may_sales
-SET date_uploaded = "2023-05-30"
-WHERE sku BETWEEN 53000 AND 53099;
-
-SELECT * FROM may_sales
-WHERE date_uploaded = "2023-05-30";
 
 --total number of items purchased from sellers in may
 SELECT COUNT(DISTINCT stock.sku)
@@ -781,3 +555,432 @@ FROM may_sales
 WHERE sku BETWEEN 50100 AND 53199
 AND LENGTH(sku) > 4
 GROUP BY "Week Uploaded", "Where Sold";
+
+--create august sales table and importing csv
+CREATE TABLE aug_sales
+(date TEXT,
+category TEXT,
+item TEXT,
+qty TEXT,
+sku TEXT,
+gross_sale INTEGER,
+discount INTEGER,
+net_sale INTEGER,
+tax INTEGER,
+transactioniD TEXT,
+device TEXT,
+notes TEXT,
+location TEXT,
+customer_id TEXT,
+customer TEXT,
+count INTEGER,
+itemization TEXT,
+employee TEXT);
+
+--total number of items purchased from sellers in august
+SELECT COUNT(DISTINCT stock.sku)
+FROM stock
+WHERE sku BETWEEN 80100 and 89999
+AND LENGTH(stock.sku) < 6;
+
+--total number of items that sold in august
+SELECT SUM(qty)
+FROM aug_sales
+WHERE LENGTH(sku) < 6;
+
+--total number of items purchased in august that sold in august
+SELECT SUM(qty)
+FROM aug_sales
+WHERE sku BETWEEN 80100 AND 89999
+AND LENGTH(sku) < 6;
+
+--total number of items NOT purchased in august that sold in august
+SELECT SUM(qty)
+FROM aug_sales
+WHERE sku NOT BETWEEN 80100 AND 89999
+AND LENGTH(sku) < 6;
+
+--total number of items purchased in august by category
+SELECT i.category, COUNT(DISTINCT s.sku)
+FROM stock s
+LEFT JOIN inventory i
+ON s.sku = i.sku
+WHERE s.sku BETWEEN 80100 AND 89999
+AND LENGTH(s.sku) < 6
+GROUP BY i.category;
+
+--total number of items purchased in august that sold in august, by category
+SELECT category, SUM(qty)
+FROM aug_sales
+WHERE sku BETWEEN 80100 AND 89999
+AND LENGTH(sku) < 6
+GROUP BY category;
+
+--total items sold in august by price point
+SELECT SUM(qty) AS "Total Sold",
+CASE
+WHEN a.gross_sale BETWEEN 3 AND 10 THEN "$4-$10"
+WHEN a.gross_sale BETWEEN 11 AND 20 THEN "$12-$20"
+ELSE "Over $20"
+END AS "Price Point"
+FROM aug_sales a
+WHERE LENGTH(a.sku) < 6
+GROUP BY "Price Point";
+
+--average price of items purchased in august by category
+SELECT category, AVG(price) AS "Average Price"
+FROM inventory
+WHERE sku BETWEEN 70100 AND 79999
+AND LENGTH(sku) < 6
+GROUP BY category;
+
+--average price of items bought in august that sold in august, by category
+SELECT category, AVG(gross_sale) AS "Average Price"
+FROM jul_sales
+WHERE sku BETWEEN 70100 AND 79999
+AND LENGTH(sku) < 6
+GROUP BY category;
+
+--total online items uploaded in august
+SELECT COUNT(DISTINCT sku) AS "Online Items Uploaded"
+FROM inventory
+WHERE sku BETWEEN 80100 AND 83199
+AND LENGTH(sku) < 6;
+
+--total online items sold in august
+SELECT SUM(qty) AS "Online Items Sold"
+FROM aug_sales
+WHERE sku BETWEEN 80100 AND 83199
+AND LENGTH(sku) < 6;
+
+--august online items sold in store vs online
+SELECT SUM(qty) AS "Items Sold",
+CASE
+WHEN device = "" THEN "Online"
+ELSE "In Store"
+END AS "Where Sold"
+FROM aug_sales
+WHERE sku BETWEEN 80100 AND 83199
+AND LENGTH(sku) < 6
+GROUP BY "Where Sold";
+
+--total items purchased from various brands by month
+SELECT COUNT(sku) as purchased,
+CASE
+WHEN item LIKE "%zara%" THEN "Zara"
+WHEN item LIKE "%forever 21%" THEN "Forever 21"
+WHEN item LIKE "%h&m%" THEN "H&M"
+WHEN item LIKE "%wild fable%" THEN "Wild Fable"
+WHEN item LIKE "%urban%" THEN "Urban Outfitters"
+WHEN item LIKE "%bdg%" THEN "BDG"
+WHEN item LIKE "%under%" THEN "Out From Under"
+WHEN item LIKE "%american eagle%" THEN "American Eagle"
+WHEN item LIKE "%shein%" THEN "Shein"
+WHEN item LIKE "%asos%" THEN "ASOS"
+WHEN item LIKE "%old navy%" THEN "Old Navy"
+WHEN item LIKE "%topshop%" THEN "Topshop"
+WHEN item LIKE "%brandy%" THEN "Brandy Melville"
+WHEN item LIKE "%loft%" THEN "LOFT"
+WHEN item LIKE "%express%" THEN "Express"
+WHEN item LIKE "%free people%" THEN "Free People"
+WHEN item LIKE "%aerie%" THEN "Aerie"
+WHEN item LIKE "%uniqlo%" THEN "Uniqlo"
+WHEN item LIKE "%abercrombie%" THEN "Abercrombie"
+WHEN item LIKE "%adidas%" THEN "Adidas"
+WHEN item LIKE "%champion%" THEN "Champion"
+WHEN item LIKE "%bauer%" THEN "Eddie Bauer"
+WHEN item LIKE "%everlane%" THEN "Everlane"
+WHEN item LIKE "%gap%" THEN "Gap"
+WHEN item LIKE "%harley%" THEN "Harley Davidson"
+WHEN item LIKE "%nike%" THEN "Nike"
+WHEN item LIKE "%reformation%" THEN "Reformation"
+ELSE "Other"
+END AS "brand",
+CASE
+WHEN sku BETWEEN 40100 AND 49999 THEN "4 April"
+WHEN sku BETWEEN 50100 AND 59999 THEN "5 May"
+WHEN sku BETWEEN 60100 AND 69999 THEN "6 June"
+WHEN sku BETWEEN 70100 AND 79999 THEN "7 July"
+WHEN sku BETWEEN 80100 AND 89999 THEN "8 August"
+ELSE "Other"
+END AS "month"
+FROM inventory
+WHERE LENGTH(sku) < 6
+GROUP BY "brand","month"
+ORDER BY "brand" ASC;
+
+--total number of items purchased in august that sold in august from various brands
+SELECT COUNT(sku) as sold,
+CASE
+WHEN item LIKE "%zara%" THEN "Zara"
+WHEN item LIKE "%forever 21%" THEN "Forever 21"
+WHEN item LIKE "%h&m%" THEN "H&M"
+WHEN item LIKE "%wild fable%" THEN "Wild Fable"
+WHEN item LIKE "%urban%" THEN "Urban Outfitters"
+WHEN item LIKE "%bdg%" THEN "BDG"
+WHEN item LIKE "%under%" THEN "Out From Under"
+WHEN item LIKE "%american eagle%" THEN "American Eagle"
+WHEN item LIKE "%shein%" THEN "Shein"
+WHEN item LIKE "%asos%" THEN "ASOS"
+WHEN item LIKE "%old navy%" THEN "Old Navy"
+WHEN item LIKE "%topshop%" THEN "Topshop"
+WHEN item LIKE "%brandy%" THEN "Brandy Melville"
+WHEN item LIKE "%loft%" THEN "LOFT"
+WHEN item LIKE "%express%" THEN "Express"
+WHEN item LIKE "%free people%" THEN "Free People"
+WHEN item LIKE "%aerie%" THEN "Aerie"
+WHEN item LIKE "%uniqlo%" THEN "Uniqlo"
+WHEN item LIKE "%abercrombie%" THEN "Abercrombie"
+WHEN item LIKE "%adidas%" THEN "Adidas"
+WHEN item LIKE "%champion%" THEN "Champion"
+WHEN item LIKE "%bauer%" THEN "Eddie Bauer"
+WHEN item LIKE "%everlane%" THEN "Everlane"
+WHEN item LIKE "%gap%" THEN "Gap"
+WHEN item LIKE "%harley%" THEN "Harley Davidson"
+WHEN item LIKE "%nike%" THEN "Nike"
+WHEN item LIKE "%reformation%" THEN "Reformation"
+ELSE "Other"
+END AS "brand"
+FROM aug_sales
+WHERE sku BETWEEN 80100 AND 89999
+AND LENGTH(sku) < 6
+GROUP BY "brand"
+ORDER BY "brand" ASC;
+
+--total items purchased year to date by brand
+SELECT COUNT(sku) as purchased,
+CASE
+WHEN item LIKE "%zara%" THEN "Zara"
+WHEN item LIKE "%forever 21%" THEN "Forever 21"
+WHEN item LIKE "%h&m%" THEN "H&M"
+WHEN item LIKE "%wild fable%" THEN "Wild Fable"
+WHEN item LIKE "%urban%" THEN "Urban Outfitters"
+WHEN item LIKE "%bdg%" THEN "BDG"
+WHEN item LIKE "%under%" THEN "Out From Under"
+WHEN item LIKE "%american eagle%" THEN "American Eagle"
+WHEN item LIKE "%shein%" THEN "Shein"
+WHEN item LIKE "%asos%" THEN "ASOS"
+WHEN item LIKE "%old navy%" THEN "Old Navy"
+WHEN item LIKE "%topshop%" THEN "Topshop"
+WHEN item LIKE "%brandy%" THEN "Brandy Melville"
+WHEN item LIKE "%loft%" THEN "LOFT"
+WHEN item LIKE "%express%" THEN "Express"
+WHEN item LIKE "%free people%" THEN "Free People"
+WHEN item LIKE "%aerie%" THEN "Aerie"
+WHEN item LIKE "%uniqlo%" THEN "Uniqlo"
+WHEN item LIKE "%abercrombie%" THEN "Abercrombie"
+WHEN item LIKE "%adidas%" THEN "Adidas"
+WHEN item LIKE "%champion%" THEN "Champion"
+WHEN item LIKE "%bauer%" THEN "Eddie Bauer"
+WHEN item LIKE "%everlane%" THEN "Everlane"
+WHEN item LIKE "%gap%" THEN "Gap"
+WHEN item LIKE "%harley%" THEN "Harley Davidson"
+WHEN item LIKE "%nike%" THEN "Nike"
+WHEN item LIKE "%reformation%" THEN "Reformation"
+ELSE "Other"
+END AS "brand"
+FROM inventory
+WHERE LENGTH(sku) < 6
+AND sku BETWEEN 10100 AND 89999
+GROUP BY "brand"
+ORDER BY "brand" ASC;
+
+--total item sales by brand year to date
+WITH allsales AS (
+SELECT sku,item FROM apr_sales
+UNION
+SELECT sku,item FROM may_sales
+UNION
+SELECT sku,item FROM jun_sales
+UNION
+SELECT sku,item FROM jul_sales
+UNION
+SELECT sku,item FROM aug_sales
+WHERE sku BETWEEN 10100 AND 89999
+)
+SELECT COUNT(sku) as sold,
+CASE
+WHEN item LIKE "%zara%" THEN "Zara"
+WHEN item LIKE "%forever 21%" THEN "Forever 21"
+WHEN item LIKE "%h&m%" THEN "H&M"
+WHEN item LIKE "%wild fable%" THEN "Wild Fable"
+WHEN item LIKE "%urban%" THEN "Urban Outfitters"
+WHEN item LIKE "%bdg%" THEN "BDG"
+WHEN item LIKE "%under%" THEN "Out From Under"
+WHEN item LIKE "%american eagle%" THEN "American Eagle"
+WHEN item LIKE "%shein%" THEN "Shein"
+WHEN item LIKE "%asos%" THEN "ASOS"
+WHEN item LIKE "%old navy%" THEN "Old Navy"
+WHEN item LIKE "%topshop%" THEN "Topshop"
+WHEN item LIKE "%brandy%" THEN "Brandy Melville"
+WHEN item LIKE "%loft%" THEN "LOFT"
+WHEN item LIKE "%express%" THEN "Express"
+WHEN item LIKE "%free people%" THEN "Free People"
+WHEN item LIKE "%aerie%" THEN "Aerie"
+WHEN item LIKE "%uniqlo%" THEN "Uniqlo"
+WHEN item LIKE "%abercrombie%" THEN "Abercrombie"
+WHEN item LIKE "%adidas%" THEN "Adidas"
+WHEN item LIKE "%champion%" THEN "Champion"
+WHEN item LIKE "%bauer%" THEN "Eddie Bauer"
+WHEN item LIKE "%everlane%" THEN "Everlane"
+WHEN item LIKE "%gap%" THEN "Gap"
+WHEN item LIKE "%harley%" THEN "Harley Davidson"
+WHEN item LIKE "%nike%" THEN "Nike"
+WHEN item LIKE "%reformation%" THEN "Reformation"
+ELSE "Other"
+END AS "brand"
+FROM allsales
+WHERE LENGTH(sku) < 6
+GROUP BY "brand", "month"
+ORDER BY "brand" ASC;
+
+--total items sold by brand per month, no matter when purchased
+SELECT COUNT(sku) as sold,
+CASE
+WHEN item LIKE "%zara%" THEN "Zara"
+WHEN item LIKE "%forever 21%" THEN "Forever 21"
+WHEN item LIKE "%h&m%" THEN "H&M"
+WHEN item LIKE "%wild fable%" THEN "Wild Fable"
+WHEN item LIKE "%urban%" THEN "Urban Outfitters"
+WHEN item LIKE "%bdg%" THEN "BDG"
+WHEN item LIKE "%under%" THEN "Out From Under"
+WHEN item LIKE "%american eagle%" THEN "American Eagle"
+WHEN item LIKE "%shein%" THEN "Shein"
+WHEN item LIKE "%asos%" THEN "ASOS"
+WHEN item LIKE "%old navy%" THEN "Old Navy"
+WHEN item LIKE "%topshop%" THEN "Topshop"
+WHEN item LIKE "%brandy%" THEN "Brandy Melville"
+WHEN item LIKE "%loft%" THEN "LOFT"
+WHEN item LIKE "%express%" THEN "Express"
+WHEN item LIKE "%free people%" THEN "Free People"
+WHEN item LIKE "%aerie%" THEN "Aerie"
+WHEN item LIKE "%uniqlo%" THEN "Uniqlo"
+WHEN item LIKE "%abercrombie%" THEN "Abercrombie"
+WHEN item LIKE "%adidas%" THEN "Adidas"
+WHEN item LIKE "%champion%" THEN "Champion"
+WHEN item LIKE "%bauer%" THEN "Eddie Bauer"
+WHEN item LIKE "%everlane%" THEN "Everlane"
+WHEN item LIKE "%gap%" THEN "Gap"
+WHEN item LIKE "%harley%" THEN "Harley Davidson"
+WHEN item LIKE "%nike%" THEN "Nike"
+WHEN item LIKE "%reformation%" THEN "Reformation"
+ELSE "Other"
+END AS "brand"
+FROM aug_sales
+WHERE LENGTH(sku) < 6
+GROUP BY "brand"
+ORDER BY "brand" ASC;
+
+--vintage items purchased in august
+SELECT COUNT(sku)
+FROM stock
+WHERE item LIKE "%vintage%"
+AND sku BETWEEN 80100 AND 89999
+AND LENGTH(sku) < 6;
+
+--vintage items sold in august
+SELECT COUNT(sku)
+FROM aug_sales
+WHERE item LIKE "%vintage%"
+AND sku BETWEEN 70100 AND 79999
+AND LENGTH(sku) < 6;
+
+--sellers (vendors) who have sold the most items to us in august
+SELECT COUNT(DISTINCT i.sku) AS "Total Sold", SUM(i.unit_cost) AS "Total Paid", v.id, v.name
+FROM inventory i
+INNER JOIN vendors v
+ON i.vendor=v.name
+WHERE i.sku BETWEEN 80100 AND 89999
+AND LENGTH(i.sku) < 6
+GROUP BY v.name
+ORDER BY COUNT(i.sku) DESC;
+
+--sellers (vendors) who sold the most items to us in quarter 2
+SELECT COUNT(DISTINCT i.sku) AS "Total Sold", SUM(i.unit_cost) AS "Total Paid", v.id, v.name
+FROM inventory i
+INNER JOIN vendors v
+ON i.vendor=v.name
+WHERE i.sku BETWEEN 40100 AND 69999
+AND LENGTH(i.sku) < 6
+GROUP BY v.name
+ORDER BY COUNT(i.sku) DESC;
+
+--sellers (vendors) who have sold the most items to us year to date
+SELECT COUNT(DISTINCT i.sku) AS "Total Sold", SUM(i.unit_cost) AS "Total Paid", v.id, v.name
+FROM inventory i
+INNER JOIN vendors v
+ON i.vendor=v.name
+WHERE LENGTH(i.sku) < 6
+GROUP BY v.name
+ORDER BY COUNT(i.sku) DESC;
+
+--sellers (vendors) whose items we have sold the most of in august
+WITH VendorSales AS (
+SELECT i.sku AS sku, i.vendor AS Vendor
+FROM inventory i
+INNER JOIN vendors v
+ON i.vendor=v.name
+WHERE i.sku BETWEEN 80100 AND 89999
+AND LENGTH(i.sku) < 6
+)
+SELECT v.Vendor, COUNT(DISTINCT v.sku) AS Purchased, COUNT(DISTINCT a.sku) AS Sold,
+COUNT(DISTINCT a.sku)*100/COUNT(DISTINCT v.sku) AS Percent
+FROM VendorSales v
+LEFT JOIN aug_sales a
+ON v.sku=a.sku
+GROUP BY v.vendor
+ORDER BY Percent DESC, Purchased DESC;
+
+--sellers (vendors) whose items we have sold the most of in quarter 2
+WITH VendorSales AS (
+SELECT i.sku AS sku, i.vendor AS Vendor
+FROM inventory i
+INNER JOIN vendors v
+ON i.vendor=v.name
+WHERE i.sku BETWEEN 40100 AND 69999
+AND LENGTH(i.sku) < 6
+),
+TwoSales AS (
+SELECT sku,item FROM apr_sales
+UNION
+SELECT sku,item FROM may_sales
+UNION
+SELECT sku,item FROM jun_sales
+WHERE sku BETWEEN 40100 AND 69999
+)
+SELECT v.Vendor, COUNT(DISTINCT v.sku) AS Purchased, COUNT(DISTINCT t.sku) AS Sold,
+COUNT(DISTINCT t.sku)*100/COUNT(DISTINCT v.sku) AS Percent
+FROM VendorSales v
+LEFT JOIN TwoSales t
+ON v.sku=t.sku
+GROUP BY v.vendor
+ORDER BY Percent DESC, Purchased DESC;
+
+--sellers (vendors) whose items we have sold the most of year to date
+WITH VendorSales AS (
+SELECT i.sku AS sku, i.vendor AS Vendor
+FROM inventory i
+INNER JOIN vendors v
+ON i.vendor=v.name
+WHERE i.sku BETWEEN 40100 AND 89999
+AND LENGTH(i.sku) < 6
+),
+AllSales AS (
+SELECT sku,item FROM apr_sales
+UNION
+SELECT sku,item FROM may_sales
+UNION
+SELECT sku,item FROM jun_sales
+UNION
+SELECT sku,item FROM jul_sales
+UNION
+SELECT sku,item FROM aug_sales
+WHERE sku BETWEEN 40100 AND 89999
+)
+SELECT v.Vendor, COUNT(DISTINCT v.sku) AS Purchased, COUNT(DISTINCT a.sku) AS Sold,
+COUNT(DISTINCT a.sku)*100/COUNT(DISTINCT v.sku) AS Percent
+FROM VendorSales v
+LEFT JOIN AllSales a
+ON v.sku=a.sku
+GROUP BY v.vendor
+ORDER BY Percent DESC, Purchased DESC;
