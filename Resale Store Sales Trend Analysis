@@ -1,0 +1,167 @@
+--Analyzing resale store sales data across different months to identify trends.
+
+SELECT
+    strftime('%m', date) AS Month,
+    strftime('%Y', date) AS Year,
+    SUM(gross_sale) AS TotalGrossSales,
+    SUM(net_sale) AS TotalNetSales
+FROM (
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT *FROM nov_sales
+)
+GROUP BY Year, Month
+ORDER BY Year, Month;
+
+--Identifying peak sales periods / top three months with highest net sales
+SELECT
+    Month,
+    SUM(TotalNetSale) AS MonthlyNetSales
+FROM (
+    SELECT strftime('%Y-%m', date) AS Month, net_sale AS TotalNetSale FROM apr_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM may_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM jun_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM jul_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM aug_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM sep_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM oct_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM nov_sales
+)
+GROUP BY Month
+ORDER BY MonthlyNetSales DESC
+LIMIT 3;
+
+--Calculating month-over-month growth rate
+WITH MonthlySales AS (
+    SELECT strftime('%Y-%m', date) AS Month, SUM(net_sale) AS TotalNetSale
+    FROM (
+        SELECT * FROM apr_sales
+        UNION ALL
+        SELECT * FROM may_sales
+        UNION ALL
+        SELECT * FROM jun_sales
+        UNION ALL
+        SELECT * FROM jul_sales
+        UNION ALL
+        SELECT * FROM aug_sales
+        UNION ALL
+        SELECT * FROM sep_sales
+        UNION ALL
+        SELECT * FROM oct_sales
+        UNION ALL
+        SELECT *FROM nov_sales
+    )
+    GROUP BY Month
+)
+SELECT
+    Month,
+    TotalNetSale,
+    ((TotalNetSale - LAG(TotalNetSale) OVER (ORDER BY Month)) / LAG(TotalNetSale) OVER(ORDER BY Month)) *100 AS GrowthRate
+FROM MonthlySales;
+
+--Analyzing sales by season
+SELECT
+    CASE
+        WHEN CAST(strftime('%m', date) AS INTEGER) BETWEEN 3 AND 5 THEN 'Spring'
+        WHEN CAST(strftime('%m', date) AS INTEGER) BETWEEN 6 AND 8 THEN 'Summer'
+        WHEN CAST(strftime('%m', date) AS INTEGER) BETWEEN 9 AND 11 THEN 'Fall'
+        ELSE 'Winter'
+    END AS Season,
+    SUM(net_sale) AS TotalSales
+FROM (
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT *FROM nov_sales
+)
+GROUP BY Season
+ORDER BY TotalSales DESC;
+
+--Analysis of discount impact on sales
+SELECT
+    Month,
+    SUM(DiscountAmount) AS TotalDiscountGiven,
+    SUM(qty) AS TotalUnitsSold
+FROM (
+    SELECT strftime('%Y-%m', date) AS Month, discount*qty AS DiscountAmount, qty
+    FROM apr_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM may_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM jun_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM jul_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM aug_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM sep_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM oct_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM nov_sales
+)
+GROUP BY Month
+ORDER BY TotalDiscountGiven DESC;
+
+--Sales distributions across categories
+SELECT
+    strftime('%Y-%m', date) AS Month,
+    category,
+    SUM(net_sale) AS CategorySales,
+    RANK() OVER(PARTITION BY strftime('%Y-%m', date) ORDER BY SUM(net_sale) DESC) AS SalesRank
+FROM (
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT *FROM nov_sales
+)
+GROUP BY Month, category
+ORDER BY Month, SalesRank;
