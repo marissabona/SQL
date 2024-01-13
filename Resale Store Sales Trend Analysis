@@ -6,6 +6,12 @@ SELECT
     SUM(gross_sale) AS TotalGrossSales,
     SUM(net_sale) AS TotalNetSales
 FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
     SELECT * FROM apr_sales
     UNION ALL
     SELECT * FROM may_sales
@@ -20,7 +26,9 @@ FROM (
     UNION ALL
     SELECT * FROM oct_sales
     UNION ALL
-    SELECT *FROM nov_sales
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
 )
 GROUP BY Year, Month
 ORDER BY Year, Month;
@@ -30,7 +38,11 @@ SELECT
     Month,
     SUM(TotalNetSale) AS MonthlyNetSales
 FROM (
-    SELECT strftime('%Y-%m', date) AS Month, net_sale AS TotalNetSale FROM apr_sales
+    SELECT strftime('%Y-%m', date) AS Month, net_sale AS TotalNetSale FROM jan_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM feb_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM mar_sales
     UNION ALL
     SELECT strftime('%Y-%m', date), net_sale FROM may_sales
     UNION ALL
@@ -45,6 +57,8 @@ FROM (
     SELECT strftime('%Y-%m', date), net_sale FROM oct_sales
     UNION ALL
     SELECT strftime('%Y-%m', date), net_sale FROM nov_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), net_sale FROM dec_sales
 )
 GROUP BY Month
 ORDER BY MonthlyNetSales DESC
@@ -54,6 +68,12 @@ LIMIT 3;
 WITH MonthlySales AS (
     SELECT strftime('%Y-%m', date) AS Month, SUM(net_sale) AS TotalNetSale
     FROM (
+        SELECT * FROM jan_sales
+        UNION ALL
+        SELECT * FROM feb_sales
+        UNION ALL
+        SELECT * FROM mar_sales
+        UNION ALL
         SELECT * FROM apr_sales
         UNION ALL
         SELECT * FROM may_sales
@@ -68,7 +88,9 @@ WITH MonthlySales AS (
         UNION ALL
         SELECT * FROM oct_sales
         UNION ALL
-        SELECT *FROM nov_sales
+        SELECT * FROM nov_sales
+        UNION ALL
+        SELECT * FROM dec_sales
     )
     GROUP BY Month
 )
@@ -88,6 +110,12 @@ SELECT
     END AS Season,
     SUM(net_sale) AS TotalSales
 FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
     SELECT * FROM apr_sales
     UNION ALL
     SELECT * FROM may_sales
@@ -102,7 +130,9 @@ FROM (
     UNION ALL
     SELECT * FROM oct_sales
     UNION ALL
-    SELECT *FROM nov_sales
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
 )
 GROUP BY Season
 ORDER BY TotalSales DESC;
@@ -114,6 +144,15 @@ SELECT
     SUM(qty) AS TotalUnitsSold
 FROM (
     SELECT strftime('%Y-%m', date) AS Month, discount*qty AS DiscountAmount, qty
+    FROM jan_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM feb_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM mar_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
     FROM apr_sales
     UNION ALL
     SELECT strftime('%Y-%m', date), discount*qty, qty
@@ -136,6 +175,9 @@ FROM (
     UNION ALL
     SELECT strftime('%Y-%m', date), discount*qty, qty
     FROM nov_sales
+    UNION ALL
+    SELECT strftime('%Y-%m', date), discount*qty, qty
+    FROM dec_sales
 )
 GROUP BY Month
 ORDER BY TotalDiscountGiven DESC;
@@ -147,6 +189,12 @@ SELECT
     SUM(net_sale) AS CategorySales,
     RANK() OVER(PARTITION BY strftime('%Y-%m', date) ORDER BY SUM(net_sale) DESC) AS SalesRank
 FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
     SELECT * FROM apr_sales
     UNION ALL
     SELECT * FROM may_sales
@@ -161,7 +209,9 @@ FROM (
     UNION ALL
     SELECT * FROM oct_sales
     UNION ALL
-    SELECT *FROM nov_sales
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
 )
 GROUP BY Month, category
 ORDER BY Month, SalesRank;
