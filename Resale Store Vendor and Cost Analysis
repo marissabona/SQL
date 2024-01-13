@@ -1,0 +1,221 @@
+--Analyzing resale store vendor data to evaluate vendor performance and cost implications.
+
+SELECT
+    v.name,
+    (SELECT COUNT(DISTINCT sku) FROM stock WHERE vendor=v.name) AS NumberOfItemsSupplied,
+    (SELECT SUM(cost) FROM stock WHERE vendor=v.name) AS TotalCost,
+    (SELECT AVG(cost) FROM stock WHERE vendor=v.name) AS AverageCostPerItem
+FROM vendors v
+ORDER BY NumberOfItemsSupplied DESC;
+
+
+--Monthly purchases from each vendor
+SELECT
+    strftime('%Y-%m', sh.date) AS Month,
+    v.name AS VendorName,
+    SUM(sh.cost) AS TotalMonthlyCost
+FROM stock sh
+JOIN vendors v
+ON sh.vendor=v.name
+GROUP BY Month, VendorName
+ORDER BY Month, TotalMonthlyCost DESC;
+
+--Yearly purchases from each vendor
+SELECT
+    strftime('%Y', sh.date) AS Year,
+    v.name AS VendorName,
+    SUM(sh.cost) AS TotalAnnualCost
+FROM stock sh
+JOIN vendors v
+ON sh.vendor=v.name
+GROUP BY Year, VendorName
+ORDER BY Year, TotalAnnualCost DESC;
+
+--Average monthly purchase cost per vendor
+SELECT
+    v.name AS VendorName,
+    AVG(MonthlyCost) AS AvgMonthlyCost
+FROM (
+    SELECT
+    strftime('%Y-%m', sh.date) AS Month,
+    sh.vendor,
+    SUM(sh.cost) AS MonthlyCost
+FROM stock sh
+GROUP BY Month, sh.vendor
+)
+JOIN vendors v
+ON vendor=v.name
+GROUP BY VendorName
+ORDER BY AvgMonthlyCost DESC;
+
+--Vendor cost efficiency analysis
+SELECT
+    v.name AS VendorName,
+    AVG(sh.cost) AS AverageCostPerItem,
+    COUNT(DISTINCT sh.item) AS UniqueItemsSupplied
+FROM vendors v
+JOIN stock sh
+ON v.name=sh.vendor
+GROUP BY VendorName
+ORDER BY AverageCostPerItem, UniqueItemsSupplied DESC;
+
+--Vendor supply frequency and volume
+SELECT
+    v.name AS VendorName,
+    COUNT(sh.date) AS SupplyFrequency,
+    SUM(sh.adjustment) AS TotalItemsSupplied
+FROM vendors v
+JOIN stock sh
+ON v.name=sh.vendor
+WHERE sh.adjustment > 0
+GROUP BY VendorName
+ORDER BY SupplyFrequency DESC, TotalItemsSupplied DESC;
+
+--Vendor impact on inventory value
+SELECT
+    v.name AS VendorName,
+    SUM(sh.cost*sh.adjustment) AS TotalValueAddedToInventory
+FROM vendors v
+JOIN stock sh
+ON v.name=sh.vendor
+GROUP BY VendorName
+ORDER BY TotalValueAddedToInventory DESC;
+
+-- Monthly inventory turnover rate
+SELECT
+    strftime('%Y-%m', s.date) AS Month,
+    i.sku,
+    COUNT(s.sku) AS SalesCount,
+    i.quantity AS CurrentInventory,
+    (CAST(COUNT(s.sku) AS REAL) / i.quantity) AS TurnoverRate
+FROM inventory i
+LEFT JOIN (
+    SELECT date, sku FROM jan_sales
+    UNION ALL
+    SELECT date, sku FROM feb_sales
+    UNION ALL
+    SELECT date, sku FROM mar_sales
+    UNION ALL
+    SELECT date, sku FROM apr_sales
+    UNION ALL
+    SELECT date, sku FROM may_sales
+    UNION ALL
+    SELECT date, sku FROM jun_sales
+    UNION ALL
+    SELECT date, sku FROM jul_sales
+    UNION ALL
+    SELECT date, sku FROM aug_sales
+    UNION ALL
+    SELECT date, sku FROM sep_sales
+    UNION ALL
+    SELECT date, sku FROM nov_sales
+    UNION ALL
+    SELECT date, sku FROM dec_sales
+) s
+ON i.sku=s.sku
+GROUP BY Month, i.sku
+ORDER BY Month, TurnoverRate DESC;
+
+--Year end inventory status
+SELECT
+    strftime('%Y', sh.date) AS Year,
+    i.sku,
+    SUM(CASE WHEN sh.date <= date('now', 'start of year', '+1 year', '-1 day')
+    THEN sh.adjustment
+    ELSE 0
+END) AS YearlyAdjustment,
+i.quantity AS EndOfYearInventory
+FROM inventory i
+LEFT JOIN stock sh ON i.sku=sh.sku
+GROUP BY Year, i.sku
+ORDER BY Year, EndOfYearInventory DESC;
+
+--Monthly inventory replenishment
+SELECT
+    strftime('%Y-%m', sh.date) AS Month,
+    sh.sku,
+    COUNT(sh.sku) AS ReplenishmentCount,
+    SUM(sh.adjustment) AS TotalReplenished
+FROM stock sh
+WHERE sh.adjustment > 0
+GROUP BY Month, sh.sku
+ORDER BY Month, TotalReplenished DESC;
+
+--Slowest moving inventory items
+SELECT
+    i.sku,
+    i.quantity,
+    SUM(s.qty) AS TotalSold,
+    (i.quantity - SUM(s.qty)) AS RemainingInventory,
+    (CAST(s.qty AS REAL) / i.quantity) AS TurnoverRate
+FROM inventory i
+LEFT JOIN (
+    SELECT sku, qty FROM jan_sales
+    UNION ALL
+    SELECT sku, qty FROM feb_sales
+    UNION ALL
+    SELECT sku, qty FROM mar_sales
+    UNION ALL
+    SELECT sku, qty FROM apr_sales
+    UNION ALL
+    SELECT sku, qty FROM may_sales
+    UNION ALL
+    SELECT sku, qty FROM jun_sales
+    UNION ALL
+    SELECT sku, qty FROM jul_sales
+    UNION ALL
+    SELECT sku, qty FROM aug_sales
+    UNION ALL
+    SELECT sku, qty FROM sep_sales
+    UNION ALL
+    SELECT sku, qty FROM nov_sales
+    UNION ALL
+    SELECT sku, qty FROM dec_sales
+) s
+ON i.sku=s.sku
+GROUP BY i.sku
+HAVING RemainingInventory > 0
+ORDER BY TurnoverRate ASC;
+
+--Inventory turnover rate by category
+SELECT
+    i.category,
+    SUM(s.qty) AS TotalSold,
+    AVG(i.quantity) AS AverageInventory,
+    (CAST(SUM(s.qty) AS REAL) / AVG(i.quantity)) AS TurnoverRate
+FROM inventory i
+LEFT JOIN (
+    SELECT sku, qty FROM jan_sales
+    UNION ALL
+    SELECT sku, qty FROM feb_sales
+    UNION ALL
+    SELECT sku, qty FROM mar_sales
+    UNION ALL
+    SELECT sku, qty FROM apr_sales
+    UNION ALL
+    SELECT sku, qty FROM may_sales
+    UNION ALL
+    SELECT sku, qty FROM jun_sales
+    UNION ALL
+    SELECT sku, qty FROM jul_sales
+    UNION ALL
+    SELECT sku, qty FROM aug_sales
+    UNION ALL
+    SELECT sku, qty FROM sep_sales
+    UNION ALL
+    SELECT sku, qty FROM oct_sales
+    UNION ALL
+    SELECT sku, qty FROM nov_sales
+    UNION ALL
+    SELECT sku, qty FROM dec_sales
+) s ON i.sku=s.sku
+GROUP BY i.category
+ORDER BY TurnoverRate DESC;
+
+--Category wise inventory analysis
+SELECT
+    category,
+    SUM(quantity*price) AS TotalInventoryValue
+FROM inventory
+GROUP BY category
+ORDER BY TotalInventoryValue DESC;
