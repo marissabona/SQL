@@ -1,0 +1,180 @@
+--Analysis of sales data to determine the performance of different items and categories.
+
+SELECT
+    category,
+    SUM(qty) AS TotalQuantitySold,
+    SUM(net_sale) AS TotalNetSale
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+GROUP BY category
+ORDER BY TotalNetSale DESC;
+
+--Category performance overview
+SELECT
+    category,
+    SUM(qty) AS TotalQuantitySold,
+    SUM(gross_sale) AS TotalGrossSales,
+    SUM(net_sale) AS TotalNetSales,
+    AVG(net_sale) AS AverageNetSalePerItem
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+GROUP BY category
+ORDER BY TotalNetSales DESC;
+
+--Month-by-month category performance
+SELECT
+    strftime('%Y-%m', date) AS Month,
+    category,
+    SUM(qty) AS TotalQuantity,
+    SUM(gross_sale) AS TotalGrossSales,
+    SUM(net_sale) AS TotalNetSales
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+GROUP BY Month, category
+ORDER BY Month, TotalNetSales DESC;
+
+--Category growth rate analysis
+WITH MonthlyCategorySales AS (
+    SELECT
+        strftime('%Y-%m', date) AS Month,
+        category,
+        SUM(net_sale) AS TotalNetSale
+    FROM (
+        SELECT * FROM jan_sales
+        UNION ALL
+        SELECT * FROM feb_sales
+        UNION ALL
+        SELECT * FROM mar_sales
+        UNION ALL
+        SELECT * FROM apr_sales
+        UNION ALL
+        SELECT * FROM may_sales
+        UNION ALL
+        SELECT * FROM jun_sales
+        UNION ALL
+        SELECT * FROM jul_sales
+        UNION ALL
+        SELECT * FROM aug_sales
+        UNION ALL
+        SELECT * FROM sep_sales
+        UNION ALL
+        SELECT * FROM oct_sales
+        UNION ALL
+        SELECT * FROM nov_sales
+        UNION ALL
+        SELECT * FROM dec_sales
+    )
+    GROUP BY Month, category
+)
+SELECT
+    Month,
+    category,
+    TotalNetSale,
+    ((TotalNetSale - LAG(TotalNetSale) 
+    OVER (PARTITION BY category ORDER BY Month)) / LAG(TotalNetSale) 
+    OVER (PARTITION BY category ORDER BY MONTH))*100 AS GrowthRate
+FROM MonthlyCategorySales;
+
+--Comparative analysis of discount impact by category
+SELECT
+    category,
+    SUM(discount*qty) AS TotalDiscountGiven,
+    SUM(qty) AS TotalUnitsSold,
+    SUM(net_sale) AS TotalNetSales,
+    AVG(discount) AS AverageDiscount
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+GROUP BY category
+ORDER BY TotalDiscountGiven DESC, TotalNetSales DESC;
