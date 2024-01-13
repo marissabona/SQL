@@ -1,0 +1,377 @@
+--Using resale store customer sales data to analyze buying patterns and preferences of customers.
+
+SELECT
+    customer_id,
+    COUNT(DISTINCT transactionID) AS NumberOfTransactions,
+    SUM(qty) AS TotalItemsPurchased,
+    AVG(net_sale) AS AverageSalePerTransaction
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+) 
+WHERE customer_id IS NOT NULL
+GROUP BY customer_id
+ORDER BY NumberOfTransactions DESC;
+
+--Monthly spending by customer
+SELECT
+    strftime('%Y-%m', date) AS Month,
+    customer_id,
+    SUM(net_sale) AS TotalSpending
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+WHERE customer_id IS NOT NULL
+GROUP BY Month, customer_id
+ORDER BY Month, TotalSpending DESC;
+
+--Yearly spending by customer
+SELECT
+    strftime('%Y', date) AS Year,
+    customer_id,
+    SUM(net_sale) AS TotalSpending
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+WHERE customer_id IS NOT NULL
+GROUP BY Year, customer_id
+ORDER BY Year, TotalSpending DESC;
+
+--Average monthly spending per customer
+SELECT
+    customer_id,
+    AVG(MonthlySpending) AS AvgMonthlySpending
+FROM (
+    SELECT
+        strftime('%Y-%m', date) AS Month,
+        customer_id,
+        SUM(net_sale) AS MonthlySpending
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+    WHERE customer_id IS NOT NULL
+    GROUP BY Month, customer_id
+)
+GROUP BY customer_id
+ORDER BY AvgMonthlySpending DESC;
+
+--Month-over-month change in spending per customer
+SELECT
+    customer_id,
+    Month,
+    MonthlySpending,
+    (MonthlySpending - LAG(MonthlySpending) 
+    OVER (PARTITION BY customer_id ORDER BY Month)) AS ChangeInSpending
+FROM (
+    SELECT
+        strftime('%Y-%m', date) AS Month,
+        customer_id,
+        SUM(net_sale) AS MonthlySpending
+FROM (
+    SELECT * FROM jan_sales
+    UNION ALL
+    SELECT * FROM feb_sales
+    UNION ALL
+    SELECT * FROM mar_sales
+    UNION ALL
+    SELECT * FROM apr_sales
+    UNION ALL
+    SELECT * FROM may_sales
+    UNION ALL
+    SELECT * FROM jun_sales
+    UNION ALL
+    SELECT * FROM jul_sales
+    UNION ALL
+    SELECT * FROM aug_sales
+    UNION ALL
+    SELECT * FROM sep_sales
+    UNION ALL
+    SELECT * FROM oct_sales
+    UNION ALL
+    SELECT * FROM nov_sales
+    UNION ALL
+    SELECT * FROM dec_sales
+)
+WHERE customer_id IS NOT NULL
+GROUP BY Month, customer_id
+)
+ORDER BY customer_id, Month;
+
+--Customer lifetime value
+SELECT
+    customer_id,
+    SUM(net_sale) AS LifetimeValue
+FROM (
+    SELECT customer_id, net_sale FROM jan_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM feb_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM mar_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM apr_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM may_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM jun_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM jul_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM aug_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM sep_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM oct_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM nov_sales
+    UNION ALL
+    SELECT customer_id, net_sale FROM dec_sales
+)
+WHERE customer_id IS NOT NULL
+GROUP BY customer_id
+ORDER BY LifetimeValue DESC;
+
+--Customer purchase frequency
+SELECT
+    customer_id,
+    COUNT(DISTINCT strftime('%Y-%m', date)) AS PurchaseMonths,
+    COUNT(*) AS TotalPurchases,
+    CAST(COUNT(*) AS REAL) / COUNT(DISTINCT strftime('%Y-%m', date)) AS FrequencyPerMonth
+FROM (
+    SELECT customer_id, date FROM jan_sales
+    UNION ALL
+    SELECT customer_id, date FROM feb_sales
+    UNION ALL
+    SELECT customer_id, date FROM mar_sales
+    UNION ALL
+    SELECT customer_id, date FROM apr_sales
+    UNION ALL
+    SELECT customer_id, date FROM may_sales
+    UNION ALL
+    SELECT customer_id, date FROM jun_sales
+    UNION ALL
+    SELECT customer_id, date FROM jul_sales
+    UNION ALL
+    SELECT customer_id, date FROM aug_sales
+    UNION ALL
+    SELECT customer_id, date FROM sep_sales
+    UNION ALL
+    SELECT customer_id, date FROM oct_sales
+    UNION ALL
+    SELECT customer_id, date FROM nov_sales
+    UNION ALL
+    SELECT customer_id, date FROM dec_sales
+)
+WHERE customer_id IS NOT NULL
+GROUP BY customer_id
+ORDER BY FrequencyPerMonth DESC;
+
+--Customer spending trends
+SELECT
+    customer_id,
+    Month,
+    MonthlySpending,
+    (MonthlySpending - LAG(MonthlySpending)
+    OVER (PARTITION BY customer_id ORDER BY Month)) AS ChangeInSpending
+FROM (
+    SELECT
+        customer_id,
+        strftime('%Y-%m', date) AS Month,
+        SUM(net_sale) AS MonthlySpending
+    FROM (
+        SELECT customer_id, date, net_sale FROM jan_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM feb_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM mar_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM apr_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM may_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM jun_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM jul_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM aug_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM sep_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM oct_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM nov_sales
+        UNION ALL
+        SELECT customer_id, date, net_sale FROM dec_sales
+    )
+    WHERE customer_id IS NOT NULL
+    GROUP BY customer_id, Month
+)
+ORDER BY customer_id, Month;
+
+--Customer preferences by category
+SELECT
+    customer_id,
+    category,
+    COUNT(*) AS PurchaseCount,
+    SUM(net_sale) AS TotalSpentInCategory,
+    RANK() OVER (PARTITION BY customer_id ORDER BY SUM(net_sale) DESC) AS CategoryRank
+FROM (
+    SELECT customer_id, category, net_sale FROM jan_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM feb_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM mar_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM apr_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM may_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM jun_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM jul_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM aug_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM sep_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM oct_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM nov_sales
+    UNION ALL
+    SELECT customer_id, category, net_sale FROM dec_sales
+)
+WHERE customer_id IS NOT NULL
+GROUP BY customer_id, category
+ORDER BY customer_id, CategoryRank;
+
+--Analysis of new vs. returning customer spending
+WITH CustomerType AS (
+    SELECT
+        customer_id,
+        MIN(strftime('%Y-%m', date)) AS FirstPurchaseMonth
+    FROM (
+        SELECT customer_id, date FROM jan_sales
+        UNION ALL
+        SELECT customer_id, date FROM feb_sales
+        UNION ALL
+        SELECT customer_id, date FROM mar_sales
+        UNION ALL
+        SELECT customer_id, date FROM apr_sales
+        UNION ALL
+        SELECT customer_id, date FROM may_sales
+        UNION ALL
+        SELECT customer_id, date FROM jun_sales
+        UNION ALL
+        SELECT customer_id, date FROM jul_sales
+        UNION ALL
+        SELECT customer_id, date FROM aug_sales
+        UNION ALL
+        SELECT customer_id, date FROM sep_sales
+        UNION ALL
+        SELECT customer_id, date FROM oct_sales
+        UNION ALL
+        SELECT customer_id, date FROM nov_sales
+        UNION ALL
+        SELECT customer_id, date FROM dec_sales
+    )
+    WHERE customer_id IS NOT NULL
+    GROUP BY customer_id
+)
+SELECT
+    CT.customer_id,
+    CASE
+        WHEN strftime('%Y-%m', S.date)=CT.FirstPurchaseMonth THEN 'New'
+        ELSE 'Returning'
+    END AS CustomerType,
+    strftime('%Y-%m', S.date) AS Month,
+    SUM(S.net_sale) AS TotalSpent
+FROM jan_sales S
+JOIN CustomerType CT ON S.customer_id=CT.customer_id
+GROUP BY CT.customer_id, CustomerType, Month
+ORDER BY CT.customer_id, Month;
