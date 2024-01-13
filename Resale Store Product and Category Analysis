@@ -1,4 +1,4 @@
---Analysis of sales data to determine the performance of different items and categories.
+--Analysis of resale store sales data to determine the performance of different items and categories.
 
 SELECT
     category,
